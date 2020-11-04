@@ -1,3 +1,27 @@
+/* AAVE */
+export interface BorrowEvent {
+  _reserve: string; // address of borrowed token
+  _user: string; // address
+  _amount: number;
+  // _borrowRateMode: number;
+  // _borrowRate
+  // _originationFee
+  // _borrowBalanceIncrease
+  _referral: number;
+  _timestamp: number;
+}
+
+export interface UserAccountData {
+  totalLiquidityETH: number;
+  totalCollateralETH: number;
+  totalBorrowsETH: number;
+  totalFeesETH: number;
+  availableBorrowsETH: number;
+  currentLiquidationThreshold: number;
+  ltv: number;
+  healthFactor: number;
+}
+
 export interface StandardizedLoan {
   exchange: string;
   contractAddress: string;
