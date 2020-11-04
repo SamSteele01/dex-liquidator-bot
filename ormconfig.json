@@ -1,0 +1,13 @@
+{
+  "type": "pg",
+  "host": "localhost",
+  "port": 5400,
+  "username": "pg_local",
+  "password": "dont_cage_the_elephants",
+  "database": "liquidation-bot-pg",
+  "synchronize": true,
+  "logging": false,
+  "entities": ["src/entity/**/*.ts"],
+  "migrations": ["src/migration/**/*.ts"],
+  "subscribers": ["src/subscriber/**/*.ts"]
+}
