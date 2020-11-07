@@ -1,7 +1,7 @@
 /*
   Getting eligible loans from AAVE has a few steps.
-  - First is getting the borrow events from the contract.
-  - Second is getting the users (addresses) that received these loans. In the data returned is a 
+  - First is getting the borrow Events from the contract.
+  - Second is getting the userAccounts that received these loans. In the data returned is a 
   "healthFactor". If it is < 1 the user is eligible for liquidation. All collateral and loans are 
   grouped together as one.
   To call the LiquidationCall method you have to know the _collateral as well as the _reserve used.
@@ -27,6 +27,7 @@ export default class Aave {
   userAccounts: UserAccountData[] = [];
   oracleAddress: string = '';
   eligibleUserAccounts: UserAccountData[] = [];
+  users: string[] = [];
 
   constructor(web3: Web3) {
     this.web3 = web3;
@@ -38,40 +39,43 @@ export default class Aave {
 
   requestAndSetAllBorrowEvents = async () => {
     const deploymentBlock = 9241022; // of LendingPool contract
+    // getLatestBlockChecked
     const latestBlock = await this.web3.eth.getBlock('latest');
     // console.log('LATESTBLOCK', latestBlock); // 11155267
     // 295 days, 182346 txns = 19+ batches => 10.49 blocks/txn // 10,000 txns/request max
     // round down to 10 blocks/txn. This gives 100,000 blocks per request. 50,000 would be better, as
-    // it would allow for increased usage in the future.
+    // it would account for increased usage in the future.
     let requests = [];
-    for (let block = deploymentBlock; block < latestBlock.number; block += 100000) {
-      if (block + 100000 > latestBlock.number) {
+    for (let block = deploymentBlock; block < latestBlock.number; block += 50000) {
+      if (block + 50000 > latestBlock.number) {
         requests.push(this.requestAndSetBorrowEventsFromRange(block, latestBlock.number));
       } else {
-        requests.push(this.requestAndSetBorrowEventsFromRange(block, block + 99999));
+        requests.push(this.requestAndSetBorrowEventsFromRange(block, block + 49999));
       }
     }
     console.log('REQUESTS', requests.length);
-    return Promise.all(requests).then((requests) => {
-      requests.forEach((borrowEvents) => {
-        console.log('AAVE BORROWEVENTS', borrowEvents.length);
-        this._borrowEvents = this._borrowEvents.concat(borrowEvents);
-      });
+    return Promise.all(requests).then(() => {
       return;
     });
   };
 
-  requestAndSetBorrowEventsFromRange = (fromBlock: number, toBlock: number) => {
-    // const batchOfBorrowEvents = await this.lendingPoolContract.getPastEvents('Borrow', {
-    return this.lendingPoolContract.getPastEvents('Borrow', {
-      filter: {},
-      fromBlock,
-      toBlock,
-    });
-    // this._borrowEvents = this._borrowEvents.concat(borrowEvents);
+  requestAndSetBorrowEventsFromRange = async (fromBlock: number, toBlock: number) => {
+    try {
+      const batchOfBorrowEvents = await this.lendingPoolContract.getPastEvents('Borrow', {
+        // return this.lendingPoolContract.getPastEvents('Borrow', {
+        filter: {},
+        fromBlock,
+        toBlock,
+      });
+      this._borrowEvents = this._borrowEvents.concat(batchOfBorrowEvents);
+    } catch (error) {
+      console.error('getPastEvents Borrow ERROR', error);
+      // problem in this block range. Break into smaller batches and try again
+    }
+    return;
   };
 
-  getAllDepositEvents = async (user: string) => {
+  requestAllDepositEvents = async (user: string) => {
     const depositEvents = await this.lendingPoolContract.getPastEvents('Deposit', {
       filter: { _user: user },
       fromBlock: 0,
@@ -87,7 +91,7 @@ export default class Aave {
     console.log('User has collaterals of: ', array);
   };
 
-  getAllLiquidationEvents = async (user: string) => {
+  requestAllLiquidationEvents = async (user: string) => {
     const LiquidationEvents = await this.lendingPoolContract.getPastEvents('LiquidationCall', {
       filter: { _user: user },
       fromBlock: 0,
@@ -96,30 +100,37 @@ export default class Aave {
     console.log('LIQUIDATIONEVENTS', LiquidationEvents);
   };
 
-  getAllUsersAccountData = async () => {
-    let uniqueUsers = new Set();
+  reduceAndSetUniqueUsers = () => {
+    let uniqueUsers: Set<string> = new Set();
     this._borrowEvents.forEach((borrowEvent) => {
       const { _user } = borrowEvent.returnValues;
       uniqueUsers.add(_user);
     });
     const users = Array.from(uniqueUsers.values());
     console.log('USERS.length', users.length);
-    // TODO: this.users
-    // out of memory sending all requests at once !!
-    const batches = chunk(users, 50); // infura rate limit of 50/sec
+    this.users = users;
+  };
+
+  requestAllUsersAccountData = async () => {
+    const batches = chunk(this.users, 50); // infura rate limit of 50/sec
     for (const batch of batches) {
-      try {
-        await Promise.all(
-          batch.map((user) => {
-            return this.lendingPoolContract.methods.getUserAccountData(user).call();
-          })
-        ).then((responses: any) => {
-          this.userAccounts = this.userAccounts.concat(responses);
-        });
-      } catch (err) {
-        console.error(err);
+      const userPromises = [];
+      for (const user of batch) {
+        userPromises.push(this.requestAndSetUserAccountData(user));
       }
-      await delay(1000);
+      await delay(1000); // wait at least one second
+      await Promise.all(userPromises);
+    }
+  };
+
+  requestAndSetUserAccountData = async (user: string) => {
+    try {
+      const userAccount: UserAccountData = await this.lendingPoolContract.methods
+        .getUserAccountData(user)
+        .call();
+      this.userAccounts.push(userAccount);
+    } catch (error) {
+      console.error('UserAccountData request error with ', user, '\n', error);
     }
     return;
   };
@@ -156,7 +167,7 @@ export default class Aave {
   getBacklog = async () => {
     // check if loans are already in db, what was the latest block checked?
     await this.requestAndSetAllBorrowEvents();
-    await this.getAllUsersAccountData();
+    await this.requestAllUsersAccountData();
     this.normalize();
     // save to db
   };
