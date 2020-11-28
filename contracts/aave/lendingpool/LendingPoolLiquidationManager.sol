@@ -112,15 +112,6 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
     function getRevision() internal pure returns (uint256) {
         return 0;
     }
-    
-    /**
-    * This was missing. Not sure that it would work without it.
-    */
-    function initialize(LendingPoolAddressesProvider _addressesProvider) public initializer {
-        addressesProvider = _addressesProvider;
-        core = LendingPoolCore(_addressesProvider.getLendingPoolCore());
-        dataProvider = LendingPoolDataProvider(_addressesProvider.getLendingPoolDataProvider());
-    }
 
     /**
     * @dev users can invoke this function to liquidate an undercollateralized position.
