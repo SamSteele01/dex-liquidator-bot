@@ -308,7 +308,7 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
     * @param _collateral the collateral to be liquidated
     * @param _principal the principal currency to be liquidated
     * @param _purchaseAmount the amount of principal being liquidated
-    * @param _userCollateralBalance the collatera balance for the specific _collateral asset of the user being liquidated
+    * @param _userCollateralBalance the collateral balance for the specific _collateral asset of the user being liquidated
     * @return the maximum amount that is possible to liquidated given all the liquidation constraints (user balance, close factor) and
     * the purchase amount
     **/
