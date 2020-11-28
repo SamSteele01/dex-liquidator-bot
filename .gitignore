@@ -1,3 +1,5 @@
+artifacts
+cache
+deployments
 node_modules
-build
 .env
