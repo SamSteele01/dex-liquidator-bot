@@ -11,6 +11,10 @@ async function main() {
   // initialize - connections to Web3, Redis and Postgres?
   const web3 = new Web3('ws://localhost:8546'); // Ganache
   const dbConnection = await createConnection();
+  // common emitter ??
+  // RateLimiter
+  // ErrorHandler
+  // MempoolWatcher
 
   // start GasPriceWatcher
 
@@ -18,14 +22,17 @@ async function main() {
   const aaveLoans = new BacklogLoansFinder(web3, dbConnection, exchanges.aave);
 
   const bZxLoans = new BacklogLoansFinder(web3, dbConnection, exchanges.bzx);
+  /* get caught up on backlog */
 
   const compoundLoans = new BacklogLoansFinder(web3, dbConnection, exchanges.compound);
+  /* Wait for latestBlockChecked to be updated for each exchange, then listen for new loan events */
 
   const dydxLoans = new BacklogLoansFinder(web3, dbConnection, exchanges.dydx);
-
-  /* listen for new loan events */
-
-  /* process loans - calculate asset price to liquidate at -> save */
+  /* process loans: 
+  - calculate asset price to liquidate at -> save 
+  - get unique tokens
+  - get oracle addresses to watch
+  */
 
   const tokenPriceListener = new ListenToRelevantTokenPrices(tokens);
   //    start TokenExchangeRateWatchers ?
@@ -34,7 +41,7 @@ async function main() {
 
   // new emitter listener - ({ token, price }) => find loans
 
-  // new Liquidator contracts
+  /* new Liquidator contracts */
 }
 
 main();

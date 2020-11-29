@@ -39,12 +39,13 @@ export default class Aave {
   }
 
   requestAndSetAllBorrowEvents = async () => {
-    // getLatestBlockChecked
+    // TODO: getLatestBlockChecked from DB
     const latestBlock = await this.web3.eth.getBlock('latest');
     // console.log('LATESTBLOCK', latestBlock); // 11155267
     // 295 days, 182346 txns = 19+ batches => 10.49 blocks/txn // 10,000 txns/request max
     // round down to 10 blocks/txn. This gives 100,000 blocks per request. 50,000 would be better, as
     // it would account for increased usage in the future.
+    // Could take as env.var, initialize, and adjust with errors
     let requests = [];
     for (let block = this.deploymentBlock; block < latestBlock.number; block += 50000) {
       if (block + 50000 > latestBlock.number) {

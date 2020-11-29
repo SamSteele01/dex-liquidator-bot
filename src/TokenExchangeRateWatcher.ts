@@ -1,4 +1,6 @@
-/* watch an instant token price */
+/* watch an instant token price
+ * sources:  http api, contracts, or the mempool
+ */
 export default class TokenExchangeRateWatcher {
   constructor(priceAPIConfig, emitter) {
     // set API url

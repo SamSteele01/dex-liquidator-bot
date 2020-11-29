@@ -5,8 +5,12 @@ import { Loan } from './entity/Loan';
 import TokenExchangeRateWatcher from './TokenExchangeRateWatcher';
 import { TokensConfig, MessageEvents } from './interfaces';
 
-/* create a TokenExchangeRateWatcher for each token that is an asset for at least one active loan 
-in the DB */
+/* create a TokenExchangeRateWatcher for each token that is an asset for at least one active loan
+ * in the DB.
+ *
+ * TODO: Get price oracle contract addresses for all exchanges used
+ * TODO: Have mempool explorer watch those contracts for price update method calls
+ */
 export default class ListenToRelevantTokenPrices {
   private _loan: Repository<Loan>;
   tokensConfig: any;
@@ -17,7 +21,6 @@ export default class ListenToRelevantTokenPrices {
   constructor(tokensConfig: TokensConfig) {
     this._loan = getRepository(Loan);
     this.tokensConfig = tokensConfig;
-    // new Emitter -> extract to method with error listener ??
     this.emitter = new EventEmitter() as TypedEmitter<MessageEvents>;
   }
 
@@ -46,6 +49,7 @@ export default class ListenToRelevantTokenPrices {
     return Array.from(assetSet);
   };
 
+  /* One price watcher per  */
   _createWatchers = () => {
     this.tokensToWatch.map((token) => {
       // get APIs from config
