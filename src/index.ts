@@ -4,12 +4,12 @@ import 'reflect-metadata';
 import Web3 from 'web3';
 import { createConnection } from 'typeorm';
 import { exchanges, tokens } from './config';
-import BacklogLoansFinder from './BacklogLoansFinder';
+import Aave from './loanFinder/Aave';
 import ListenToRelevantTokenPrices from './ListenToRelevantTokenPrices';
 
 async function main() {
   // initialize - connections to Web3, Redis and Postgres?
-  const web3 = new Web3('ws://localhost:8546'); // Ganache
+  const web3ws = new Web3('ws://localhost:8546'); // Ganache
   const dbConnection = await createConnection();
   // common emitter ??
   // RateLimiter
@@ -19,15 +19,17 @@ async function main() {
   // start GasPriceWatcher
 
   /* start loan finders, get all existing loans from exchanges that we are watching */
-  const aaveLoans = new BacklogLoansFinder(web3, dbConnection, exchanges.aave);
+  const aaveLoans = new Aave(web3ws);
 
-  const bZxLoans = new BacklogLoansFinder(web3, dbConnection, exchanges.bzx);
   /* get caught up on backlog */
+  const backlogs: Promise<any>[] = [];
+  backlogs.push(aaveLoans.getBacklog());
 
-  const compoundLoans = new BacklogLoansFinder(web3, dbConnection, exchanges.compound);
   /* Wait for latestBlockChecked to be updated for each exchange, then listen for new loan events */
+  Promise.all(backlogs).then(() => {
+    aaveLoans.listenForNewLoans();
+  });
 
-  const dydxLoans = new BacklogLoansFinder(web3, dbConnection, exchanges.dydx);
   /* process loans: 
   - calculate asset price to liquidate at -> save 
   - get unique tokens
