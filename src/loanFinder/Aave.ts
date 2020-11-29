@@ -22,6 +22,7 @@ import { chunk, delay } from '../utility';
 export default class Aave {
   web3: Web3;
   lendingPoolContract: Contract;
+  deploymentBlock!: 9241022; // of LendingPool contract
   lendingPoolAddressProviderContract: Contract;
   _borrowEvents: EventData[] = [];
   userAccounts: UserAccountData[] = [];
@@ -38,7 +39,6 @@ export default class Aave {
   }
 
   requestAndSetAllBorrowEvents = async () => {
-    const deploymentBlock = 9241022; // of LendingPool contract
     // getLatestBlockChecked
     const latestBlock = await this.web3.eth.getBlock('latest');
     // console.log('LATESTBLOCK', latestBlock); // 11155267
@@ -46,7 +46,7 @@ export default class Aave {
     // round down to 10 blocks/txn. This gives 100,000 blocks per request. 50,000 would be better, as
     // it would account for increased usage in the future.
     let requests = [];
-    for (let block = deploymentBlock; block < latestBlock.number; block += 50000) {
+    for (let block = this.deploymentBlock; block < latestBlock.number; block += 50000) {
       if (block + 50000 > latestBlock.number) {
         requests.push(this.requestAndSetBorrowEventsFromRange(block, latestBlock.number));
       } else {
@@ -78,7 +78,7 @@ export default class Aave {
   requestAllDepositEvents = async (user: string) => {
     const depositEvents = await this.lendingPoolContract.getPastEvents('Deposit', {
       filter: { _user: user },
-      fromBlock: 0,
+      fromBlock: this.deploymentBlock,
       toBlock: 'latest',
     });
     // console.log('DEPOSITEVENTS', depositEvents);
