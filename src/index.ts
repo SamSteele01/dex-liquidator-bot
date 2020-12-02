@@ -8,6 +8,7 @@ import { createConnection } from 'typeorm';
 import { exchanges, tokens } from './config';
 import ListenToRelevantTokenPrices from './ListenToRelevantTokenPrices';
 import AaveBacklog from './lendingExchanges/aave/Backlog';
+import GasPriceWatcher from './GasPriceWatcher';
 
 async function main() {
   // initialize - connections to Web3, Redis and Postgres?
@@ -18,7 +19,8 @@ async function main() {
   // MempoolWatcher
   const commonEmitter = new EventEmitter() as TypedEmitter<MessageEvents>;
 
-  // start GasPriceWatcher
+  const gasPriceWatcher = new GasPriceWatcher();
+  gasPriceWatcher.start();
 
   /* start loan finders, get all existing loans from exchanges that we are watching */
   const aaveLoans = new Aave(web3ws);
