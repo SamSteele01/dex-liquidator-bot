@@ -1,27 +1,22 @@
 
 pragma solidity ^0.5.0;
 
-import "./aave/flashloan/base/FlashLoanReceiverBase.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+// import "./aave/flashloan/base/FlashLoanReceiverBase.sol";
+import "./aave/configuration/LendingPoolAddressesProvider.sol";
+
 import "./aave/interfaces/ILendingPoolAddressesProvider.sol";
 import "./aave/interfaces/ILendingPool.sol";
-/* import "@openzeppelin/contracts/ownership/Ownable.sol"; */
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-
 
 contract AaveLiquidation {
   
-  address addressesProvider;
-  /* address liquidateCore; */
+  address constant aaveEthAddress = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+  // address addressesProvider;
+  LendingPoolAddressesProvider public addressesProvider;
   
-  constructor(address _addressesProvider, address _liquidateCore) public {
+  constructor(LendingPoolAddressesProvider _addressesProvider, address _liquidateCore) public {
     addressesProvider = _addressesProvider;
-    /* liquidateCore = _liquidateCore; */
   }
-  
-  /* modifier onlyCore {
-      require(liquidateCore == msg.sender, "The caller must be a liquidate core contract");
-      _;
-  } */
   
   function liquidate(
       address _collateral,
