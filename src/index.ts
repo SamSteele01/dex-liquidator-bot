@@ -1,6 +1,8 @@
 // get .env, exchangess, adapters
 
 import 'reflect-metadata';
+import { EventEmitter } from 'events';
+import TypedEmitter from 'typed-emitter';
 import Web3 from 'web3';
 import { createConnection } from 'typeorm';
 import { exchanges, tokens } from './config';
@@ -11,10 +13,10 @@ async function main() {
   // initialize - connections to Web3, Redis and Postgres?
   const web3ws = new Web3('ws://localhost:8546'); // Ganache
   const dbConnection = await createConnection();
-  // common emitter ??
   // RateLimiter
   // ErrorHandler
   // MempoolWatcher
+  const commonEmitter = new EventEmitter() as TypedEmitter<MessageEvents>;
 
   // start GasPriceWatcher
 
