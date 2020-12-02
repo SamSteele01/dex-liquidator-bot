@@ -5,9 +5,9 @@ import { EventEmitter } from 'events';
 import TypedEmitter from 'typed-emitter';
 import Web3 from 'web3';
 import { createConnection } from 'typeorm';
-import ListenToRelevantTokenPrices from './ListenToRelevantTokenPrices';
 import { RateLimiter } from 'limiter';
 import { url } from './config';
+import AaveAddressProvider from './lendingExchanges/aave/AddressProvider';
 import AaveBacklog from './lendingExchanges/aave/Backlog';
 import GasPriceWatcher from './GasPriceWatcher';
 import TokenPriceListener from './TokenPriceListener';
@@ -16,7 +16,6 @@ import { MessageEvents, PriceOracle } from './interfaces';
 async function main() {
   const web3ws = new Web3(url.web3()); // Ganache
   const dbConnection = await createConnection();
-  // ErrorHandler
   const commonEmitter = new EventEmitter() as TypedEmitter<MessageEvents>;
   const rateLimiter = new RateLimiter(50, 'second');
 
@@ -24,16 +23,17 @@ async function main() {
   gasPriceWatcher.start();
 
   /* start loan finders, get all existing loans from exchanges that we are watching */
-  const aaveLoans = new Aave(web3ws);
+  const aaveAddressProvider = new AaveAddressProvider(web3ws);
+  const aaveLendingPoolAddress = await aaveAddressProvider.getLendingPool();
   const aaveBacklog = new AaveBacklog(web3ws, rateLimiter, aaveLendingPoolAddress);
 
   /* get caught up on backlog */
-  const backlogs: Promise<any>[] = [];
-  backlogs.push(aaveLoans.getBacklog());
+  const backlogs: Promise<boolean>[] = [];
+  backlogs.push(aaveBacklog.syncDBWithBacklog());
 
   /* Wait for latestBlockChecked to be updated for each exchange, then listen for new loan events */
   Promise.all(backlogs).then(() => {
-    aaveLoans.listenForNewLoans();
+    // set active monitors with commonEmitter
   });
 
   /* process loans: 
