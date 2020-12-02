@@ -22,20 +22,35 @@ export interface UserAccountData {
   healthFactor: number;
 }
 
-export interface StandardizedLoan {
-  exchange: string;
-  contractAddress: string;
-  borrowerAddress: string;
-  borrowedAsset: string;
-  collateralAsset: string;
+export interface UserReserveData {
+  currentATokenBalance: string;
+  currentBorrowBalance: string;
+  principalBorrowBalance: string;
+  borrowRateMode: string;
+  borrowRate: string;
+  liquidityRate: number;
+  originationFee: number;
+  variableBorrowIndex: string;
+  lastUpdateTimestamp: number;
+  usageAsCollateralEnabled: boolean;
 }
 
-/* ListenToRelevantTokenPrices */
+export interface UserReservePair {
+  user: string;
+  reserve: string;
+}
+
+/* TokenPriceListener */
 export interface TokensConfig {
   [key: string]: TokenConfig;
 }
 
 interface TokenConfig {}
+
+export interface PriceOracle {
+  exchange: string;
+  address: string;
+}
 
 export interface MessageEvents {
   error: (error: Error) => void;
