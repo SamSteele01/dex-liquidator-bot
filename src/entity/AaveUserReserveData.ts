@@ -9,32 +9,35 @@ export class AaveUserReserveData {
   reserve: string; // address
 
   @Column()
-  currentATokenBalance: string;
+  currentATokenBalance: string | undefined;
 
   @Column()
-  currentBorrowBalance: string;
+  currentBorrowBalance: string | undefined;
 
   @Column()
-  principalBorrowBalance: string;
+  principalBorrowBalance: string | undefined;
 
   @Column()
-  borrowRateMode: string;
+  borrowRateMode: string | undefined;
 
   @Column()
-  borrowRate: string;
+  borrowRate: string | undefined;
 
   @Column()
-  liquidityRate: number;
+  liquidityRate: number | undefined;
 
   @Column()
-  originationFee: number;
+  originationFee: number | undefined;
 
   @Column()
-  variableBorrowIndex: string;
+  variableBorrowIndex: string | undefined;
 
   @Column()
-  lastUpdateTimestamp: number;
+  lastUpdateTimestamp: number | undefined;
 
   @Column()
-  usageAsCollateralEnabled: boolean;
+  usageAsCollateralEnabled: boolean | undefined;
+
+  @Column()
+  lastBlockChecked: number | undefined;
 }

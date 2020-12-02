@@ -6,26 +6,29 @@ export class AaveUserAccountData {
   user: string; // address
 
   @Column()
-  totalLiquidityETH: string;
+  totalLiquidityETH: number;
 
   @Column()
-  totalCollateralETH: string;
+  totalCollateralETH: number;
 
   @Column()
-  totalBorrowsETH: string;
+  totalBorrowsETH: number;
 
   @Column()
-  totalFeesETH: string;
+  totalFeesETH: number;
 
   @Column()
-  availableBorrowsETH: string;
+  availableBorrowsETH: number;
 
   @Column()
-  currentLiquidationThreshold: string;
+  currentLiquidationThreshold: number;
 
   @Column()
-  ltv: string;
+  ltv: number;
 
   @Column()
-  healthFactor: string;
+  healthFactor: number;
+
+  @Column()
+  lastBlockChecked: number;
 }
