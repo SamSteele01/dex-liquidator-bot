@@ -1,6 +1,6 @@
 import * as dotenv from 'dotenv';
 import Web3 from 'web3';
-import Aave from '../../src/loanFinder/Aave';
+import Aave from '../../src/lendingExchanges/aave/Backlog';
 
 dotenv.config({ path: '../../.env' });
 

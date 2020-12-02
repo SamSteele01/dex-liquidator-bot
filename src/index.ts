@@ -4,8 +4,8 @@ import 'reflect-metadata';
 import Web3 from 'web3';
 import { createConnection } from 'typeorm';
 import { exchanges, tokens } from './config';
-import Aave from './loanFinder/Aave';
 import ListenToRelevantTokenPrices from './ListenToRelevantTokenPrices';
+import AaveBacklog from './lendingExchanges/aave/Backlog';
 
 async function main() {
   // initialize - connections to Web3, Redis and Postgres?
