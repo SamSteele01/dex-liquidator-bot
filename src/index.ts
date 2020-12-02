@@ -5,15 +5,14 @@ import { EventEmitter } from 'events';
 import TypedEmitter from 'typed-emitter';
 import Web3 from 'web3';
 import { createConnection } from 'typeorm';
-import { exchanges, tokens } from './config';
 import ListenToRelevantTokenPrices from './ListenToRelevantTokenPrices';
 import { RateLimiter } from 'limiter';
+import { url } from './config';
 import AaveBacklog from './lendingExchanges/aave/Backlog';
 import GasPriceWatcher from './GasPriceWatcher';
 
 async function main() {
-  // initialize - connections to Web3, Redis and Postgres?
-  const web3ws = new Web3('ws://localhost:8546'); // Ganache
+  const web3ws = new Web3(url.web3()); // Ganache
   const dbConnection = await createConnection();
   // ErrorHandler
   // MempoolWatcher
