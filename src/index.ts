@@ -10,12 +10,13 @@ import { RateLimiter } from 'limiter';
 import { url } from './config';
 import AaveBacklog from './lendingExchanges/aave/Backlog';
 import GasPriceWatcher from './GasPriceWatcher';
+import TokenPriceListener from './TokenPriceListener';
+import { MessageEvents, PriceOracle } from './interfaces';
 
 async function main() {
   const web3ws = new Web3(url.web3()); // Ganache
   const dbConnection = await createConnection();
   // ErrorHandler
-  // MempoolWatcher
   const commonEmitter = new EventEmitter() as TypedEmitter<MessageEvents>;
   const rateLimiter = new RateLimiter(50, 'second');
 
@@ -41,10 +42,15 @@ async function main() {
   - get oracle addresses to watch
   */
 
-  const tokenPriceListener = new ListenToRelevantTokenPrices(tokens);
-  //    start TokenExchangeRateWatchers ?
+  let priceOracles: PriceOracle[] = [
+    {
+      exchange: 'aave',
+      address: await aaveAddressProvider.getPriceOracle(),
+    },
+  ];
+
+  const tokenPriceListener = new TokenPriceListener(commonEmitter, priceOracles);
   tokenPriceListener.start();
-  const tokenPriceEmitter = tokenPriceListener.getEmitter();
 
   // new emitter listener - ({ token, price }) => find loans
 

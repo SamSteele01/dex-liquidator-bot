@@ -1,8 +1,10 @@
 /* watch an instant token price
  * sources:  http api, contracts, or the mempool
  */
+import { PriceOracle } from './interfaces';
+
 export default class TokenExchangeRateWatcher {
-  constructor(priceAPIConfig, emitter) {
+  constructor(oracle: PriceOracle) {
     // set API url
   }
 
